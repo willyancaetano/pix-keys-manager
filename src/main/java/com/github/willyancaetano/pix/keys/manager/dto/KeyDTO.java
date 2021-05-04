@@ -12,12 +12,12 @@ public class KeyDTO {
     private TypeKey type;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Optional<String> value;
+    private String value;
 
     public KeyDTO() {
     }
 
-    public KeyDTO(final String accountId, final TypeKey type, final Optional<String> value) {
+    public KeyDTO(final String accountId, final TypeKey type, String value) {
         this.accountId = accountId;
         this.type = type;
         this.value = value;
@@ -32,7 +32,7 @@ public class KeyDTO {
     }
 
     public Optional<String> getValue() {
-        return value;
+        return Optional.ofNullable(value);
     }
 
 }

@@ -24,7 +24,7 @@ public class AccountKeyService {
 
         AccountKey accountKeySaved = repository.save(accountKey);
 
-        return new KeyDTO(accountKeySaved.getAccountId(), keyDTO.getType(), Optional.of(accountKeySaved.getKeys().get(keyDTO.getType())));
+        return new KeyDTO(accountKeySaved.getAccountId(), keyDTO.getType(), accountKeySaved.getKeys().get(keyDTO.getType()));
     }
 
     private AccountKey retrieveOrCreateAccountKey(final KeyDTO keyDTO, final Optional<AccountKey> accountKeyOptional) {
