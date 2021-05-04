@@ -1,6 +1,9 @@
 package com.github.willyancaetano.pix.keys.manager.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.willyancaetano.pix.keys.manager.model.TypeKey;
+
+import java.util.Optional;
 
 public class KeyDTO {
 
@@ -8,7 +11,17 @@ public class KeyDTO {
 
     private TypeKey type;
 
-    private String value;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Optional<String> value;
+
+    public KeyDTO() {
+    }
+
+    public KeyDTO(final String accountId, final TypeKey type, final Optional<String> value) {
+        this.accountId = accountId;
+        this.type = type;
+        this.value = value;
+    }
 
     public String getAccountId() {
         return accountId;
@@ -18,7 +31,7 @@ public class KeyDTO {
         return type;
     }
 
-    public String getValue() {
+    public Optional<String> getValue() {
         return value;
     }
 
