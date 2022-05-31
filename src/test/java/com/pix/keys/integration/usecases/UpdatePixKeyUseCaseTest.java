@@ -92,7 +92,7 @@ public class UpdatePixKeyUseCaseTest {
         Account newAccount = new Account(AccountType.CHECKING_ACCOUNT, 189, 60184, "Maria", "Claudia", PersonType.NATURAL_PERSON);
         accountRepository.save(newAccount);
         PixKey pixKey = new PixKey(KeyType.CELLPHONE, "5511981056743", newAccount);
-        pixKey.disableKey();
+        pixKey.inactivateKey();
         pixKeyRepository.save(pixKey).getId();
 
         mockMvc.perform(patch("/v1/pix-keys")

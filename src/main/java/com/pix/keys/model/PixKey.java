@@ -40,10 +40,10 @@ public class PixKey {
     @Column(name = "CREATION_TIME", nullable = false, updatable = false)
     private LocalTime creationTime;
 
-    @Column(name = "INACTIVATION_DATE", updatable = false)
+    @Column(name = "INACTIVATION_DATE")
     private LocalDate inactivationDate;
 
-    @Column(name = "INACTIVATION_TIME", updatable = false)
+    @Column(name = "INACTIVATION_TIME")
     private LocalTime inactivationTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -103,8 +103,11 @@ public class PixKey {
         return isActive.equals(Boolean.TRUE);
     }
 
-    public void disableKey() {
+    public void inactivateKey() {
         this.isActive = Boolean.FALSE;
+        LocalDateTime now = LocalDateTime.now();
+        this.inactivationDate = now.toLocalDate();
+        this.inactivationTime = now.toLocalTime();
     }
 
     @Override

@@ -1,5 +1,7 @@
 package com.pix.keys.controller;
 
+import com.pix.keys.dto.InactivationPixKeyRequestDto;
+import com.pix.keys.dto.InactivationPixKeyResponseDto;
 import com.pix.keys.dto.KeyType;
 import com.pix.keys.dto.PixKeyCreationRequestDto;
 import com.pix.keys.dto.PixKeyGeneratedResponseDto;
@@ -8,10 +10,12 @@ import com.pix.keys.dto.PixKeyUpdatedValueResponseDto;
 import com.pix.keys.dto.SearchPixKeyRequestDto;
 import com.pix.keys.dto.SearchPixKeyResponseDto;
 import com.pix.keys.usecase.GeneratePixKeyUseCase;
+import com.pix.keys.usecase.InactivatePixKeyUseCase;
 import com.pix.keys.usecase.SearchPixKeysUseCase;
 import com.pix.keys.usecase.UpdatePixKeyUseCase;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,10 +37,13 @@ public class PixKeysController {
     private final UpdatePixKeyUseCase updatePixKeyUseCase;
     private final SearchPixKeysUseCase searchPixKeysUseCase;
 
-    public PixKeysController(GeneratePixKeyUseCase generatePixKeyUseCase, UpdatePixKeyUseCase updatePixKeyUseCase, SearchPixKeysUseCase searchPixKeysUseCase) {
+    private final InactivatePixKeyUseCase inactivatePixKeyUseCase;
+
+    public PixKeysController(GeneratePixKeyUseCase generatePixKeyUseCase, UpdatePixKeyUseCase updatePixKeyUseCase, SearchPixKeysUseCase searchPixKeysUseCase, InactivatePixKeyUseCase inactivatePixKeyUseCase) {
         this.generatePixKeyUseCase = generatePixKeyUseCase;
         this.updatePixKeyUseCase = updatePixKeyUseCase;
         this.searchPixKeysUseCase = searchPixKeysUseCase;
+        this.inactivatePixKeyUseCase = inactivatePixKeyUseCase;
     }
 
     @ResponseStatus(HttpStatus.OK)
@@ -69,6 +76,12 @@ public class PixKeysController {
                 .accountHolderName(accountHolderName)
                 .creationDate(createdAt)
                 .inactivationDate(dateInactivateKey).build());
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @DeleteMapping
+    public InactivationPixKeyResponseDto inactivatePixKey(@Valid @RequestBody InactivationPixKeyRequestDto requestDto) {
+        return inactivatePixKeyUseCase.inactivatePixKey(requestDto);
     }
 
 }

@@ -317,7 +317,50 @@ public class GeneratePixKeyUseCaseTest {
         assertTrue(accountRepository.findAll().size() == 0);
     }
 
-    @DisplayName("Verifica se regra de validação de CPF está correta")
+    @DisplayName("Verifica se regra de validação de Email está correta - cenário ok")
+    @Test
+    public void shouldRunSuccessBecauseEmailIsValid() throws Exception {
+        mockMvc.perform(post("/v1/pix-keys")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                                """
+                                    {
+                                        "type": "EMAIL",
+                                        "valueKey": "user@provider.com",
+                                        "accountType": "CHECKING_ACCOUNT",
+                                        "branchNumber": 2,
+                                        "accountNumber": 58964,
+                                        "accountHolderName": "João",
+                                        "accountHolderSurname": "Silveira",
+                                        "personType": "JURIDICAL_PERSON"
+                                    }
+                                """)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").exists());
+
+        Optional<Account> optionalAccount = accountRepository.findByAccountTypeAndBranchNumberAndAccountNumber(AccountType.CHECKING_ACCOUNT, 2, 58964);
+        assertTrue(optionalAccount.isPresent());
+
+        Account account = optionalAccount.get();
+
+        assertEquals("João", account.getAccountHolderName());
+        assertEquals("Silveira", account.getAccountHolderSurname());
+        assertEquals(PersonType.JURIDICAL_PERSON, account.getPersonType());
+        assertEquals(1, account.getKeys().size());
+
+        Optional<PixKey> optionalPixKey = pixKeyRepository.findByValue("user@provider.com");
+        assertTrue(optionalPixKey.isPresent());
+
+        PixKey pixKey = optionalPixKey.get();
+        assertEquals(KeyType.EMAIL, pixKey.getType());
+        assertEquals("user@provider.com", pixKey.getValue());
+        assertNotNull(pixKey.getCreationDate());
+        assertNotNull(pixKey.getCreationTime());
+        assertTrue(pixKey.isActive());
+    }
+
+    @DisplayName("Verifica se regra de validação de CPF está correta - cenário de erro")
     @Test
     public void shouldThrowAnErrorBecauseDocumentCpfIsInvalid() throws Exception {
         mockMvc.perform(post("/v1/pix-keys")
@@ -344,7 +387,50 @@ public class GeneratePixKeyUseCaseTest {
         assertTrue(accountRepository.findAll().size() == 0);
     }
 
-    @DisplayName("Verifica se regra de validação de CNPJ está correta")
+    @DisplayName("Verifica se regra de validação de CPF está correta - cenário ok")
+    @Test
+    public void shouldRunSuccessBecauseDocumentCpfIsValid() throws Exception {
+        mockMvc.perform(post("/v1/pix-keys")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                                """
+                                    {
+                                        "type": "DOCUMENT_CPF",
+                                        "valueKey": "06218585018",
+                                        "accountType": "CHECKING_ACCOUNT",
+                                        "branchNumber": 2,
+                                        "accountNumber": 58964,
+                                        "accountHolderName": "João",
+                                        "accountHolderSurname": "Silveira",
+                                        "personType": "JURIDICAL_PERSON"
+                                    }
+                                """)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").exists());
+
+        Optional<Account> optionalAccount = accountRepository.findByAccountTypeAndBranchNumberAndAccountNumber(AccountType.CHECKING_ACCOUNT, 2, 58964);
+        assertTrue(optionalAccount.isPresent());
+
+        Account account = optionalAccount.get();
+
+        assertEquals("João", account.getAccountHolderName());
+        assertEquals("Silveira", account.getAccountHolderSurname());
+        assertEquals(PersonType.JURIDICAL_PERSON, account.getPersonType());
+        assertEquals(1, account.getKeys().size());
+
+        Optional<PixKey> optionalPixKey = pixKeyRepository.findByValue("06218585018");
+        assertTrue(optionalPixKey.isPresent());
+
+        PixKey pixKey = optionalPixKey.get();
+        assertEquals(KeyType.DOCUMENT_CPF, pixKey.getType());
+        assertEquals("06218585018", pixKey.getValue());
+        assertNotNull(pixKey.getCreationDate());
+        assertNotNull(pixKey.getCreationTime());
+        assertTrue(pixKey.isActive());
+    }
+
+    @DisplayName("Verifica se regra de validação de CNPJ está correta - cenário de erro")
     @Test
     public void shouldThrowAnErrorBecauseDocumentCnpjIsInvalid() throws Exception {
         mockMvc.perform(post("/v1/pix-keys")
@@ -366,6 +452,130 @@ public class GeneratePixKeyUseCaseTest {
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.detail").value("CNPJ inválido"));
+
+        assertTrue(pixKeyRepository.findAll().size() == 0);
+        assertTrue(accountRepository.findAll().size() == 0);
+    }
+
+    @DisplayName("Verifica se regra de validação de CNPJ está correta - cenário ok")
+    @Test
+    public void shouldRunSuccessBecauseDocumentCnpjIsValid() throws Exception {
+        mockMvc.perform(post("/v1/pix-keys")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                                """
+                                    {
+                                        "type": "DOCUMENT_CNPJ",
+                                        "valueKey": "08632030000122",
+                                        "accountType": "CHECKING_ACCOUNT",
+                                        "branchNumber": 2,
+                                        "accountNumber": 58964,
+                                        "accountHolderName": "João",
+                                        "accountHolderSurname": "Silveira",
+                                        "personType": "JURIDICAL_PERSON"
+                                    }
+                                """)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").exists());
+
+        Optional<Account> optionalAccount = accountRepository.findByAccountTypeAndBranchNumberAndAccountNumber(AccountType.CHECKING_ACCOUNT, 2, 58964);
+        assertTrue(optionalAccount.isPresent());
+
+        Account account = optionalAccount.get();
+
+        assertEquals("João", account.getAccountHolderName());
+        assertEquals("Silveira", account.getAccountHolderSurname());
+        assertEquals(PersonType.JURIDICAL_PERSON, account.getPersonType());
+        assertEquals(1, account.getKeys().size());
+
+        Optional<PixKey> optionalPixKey = pixKeyRepository.findByValue("08632030000122");
+        assertTrue(optionalPixKey.isPresent());
+
+        PixKey pixKey = optionalPixKey.get();
+        assertEquals(KeyType.DOCUMENT_CNPJ, pixKey.getType());
+        assertEquals("08632030000122", pixKey.getValue());
+        assertNotNull(pixKey.getCreationDate());
+        assertNotNull(pixKey.getCreationTime());
+        assertTrue(pixKey.isActive());
+    }
+
+    @DisplayName("Verifica se regra de validação de celular está correta - cenário de erro sinal '+' ")
+    @Test
+    public void shouldThrowAnErrorBecauseCellPhoneIsInvalidStartsPlus() throws Exception {
+        mockMvc.perform(post("/v1/pix-keys")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                                """
+                                    {
+                                        "type": "CELLPHONE",
+                                        "valueKey": "557908187389",
+                                        "accountType": "CHECKING_ACCOUNT",
+                                        "branchNumber": 2,
+                                        "accountNumber": 58964,
+                                        "accountHolderName": "João",
+                                        "accountHolderSurname": "Silveira",
+                                        "personType": "JURIDICAL_PERSON"
+                                    }
+                                """)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.detail").value("Número de celular inválido"));
+
+        assertTrue(pixKeyRepository.findAll().size() == 0);
+        assertTrue(accountRepository.findAll().size() == 0);
+    }
+
+    @DisplayName("Verifica se regra de validação de celular está correta - cenário de erro formato ")
+    @Test
+    public void shouldThrowAnErrorBecauseCellPhoneIsInvalid() throws Exception {
+        mockMvc.perform(post("/v1/pix-keys")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                                """
+                                    {
+                                        "type": "CELLPHONE",
+                                        "valueKey": "+557908187389a",
+                                        "accountType": "CHECKING_ACCOUNT",
+                                        "branchNumber": 2,
+                                        "accountNumber": 58964,
+                                        "accountHolderName": "João",
+                                        "accountHolderSurname": "Silveira",
+                                        "personType": "JURIDICAL_PERSON"
+                                    }
+                                """)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.detail").value("Número de celular inválido"));
+
+        assertTrue(pixKeyRepository.findAll().size() == 0);
+        assertTrue(accountRepository.findAll().size() == 0);
+    }
+
+    @DisplayName("Verifica se regra de validação de celular está correta - cenário de erro formato 2")
+    @Test
+    public void shouldThrowAnErrorBecauseCellPhoneIsInvalidFormat() throws Exception {
+        mockMvc.perform(post("/v1/pix-keys")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                                """
+                                    {
+                                        "type": "CELLPHONE",
+                                        "valueKey": "+aaaaaa",
+                                        "accountType": "CHECKING_ACCOUNT",
+                                        "branchNumber": 2,
+                                        "accountNumber": 58964,
+                                        "accountHolderName": "João",
+                                        "accountHolderSurname": "Silveira",
+                                        "personType": "JURIDICAL_PERSON"
+                                    }
+                                """)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.detail").value("Número de celular inválido"));
 
         assertTrue(pixKeyRepository.findAll().size() == 0);
         assertTrue(accountRepository.findAll().size() == 0);

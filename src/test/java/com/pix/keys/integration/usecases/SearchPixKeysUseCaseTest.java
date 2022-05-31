@@ -23,6 +23,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -119,6 +120,42 @@ public class SearchPixKeysUseCaseTest {
                 .andExpect(jsonPath("$[0].accountHolderSurname").value("Beatriz"))
                 .andExpect(jsonPath("$[0].creationDate").value(today))
                 .andExpect(jsonPath("$[0].inactivationDate").value(""));
+    }
+
+    @DisplayName("Valida se busca dois registros por data de inativação")
+    @Test
+    public void shouldSearchByInactivationDate() throws Exception {
+
+        Account account = new Account(AccountType.CHECKING_ACCOUNT, 1, 12345, "Claudia",
+                "Beatriz", PersonType.NATURAL_PERSON);
+        accountRepository.save(account);
+
+        PixKey pixKey = new PixKey(KeyType.RANDOM, "1d1d6467-e939-46e0-94e6-9f5298fb5e40", account);
+        pixKey.inactivateKey();
+        pixKeyRepository.save(pixKey);
+
+        pixKey = new PixKey(KeyType.EMAIL, "will@gmail.com", account);
+        pixKey.inactivateKey();
+        pixKeyRepository.save(pixKey);
+
+        String today = DateTimeFormatter.ofPattern("dd/MM/yyyy").format(LocalDate.now());
+
+        mockMvc.perform(get("/v1/pix-keys")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("inactivation-date", LocalDate.now().toString())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", Matchers.hasSize(2)))
+                .andExpect(jsonPath("$[1].id").value(pixKey.getId()))
+                .andExpect(jsonPath("$[1].type").value("EMAIL"))
+                .andExpect(jsonPath("$[1].valueKey").value("will@gmail.com"))
+                .andExpect(jsonPath("$[1].accountType").value("CHECKING_ACCOUNT"))
+                .andExpect(jsonPath("$[1].branchNumber").value("1"))
+                .andExpect(jsonPath("$[1].accountNumber").value("12345"))
+                .andExpect(jsonPath("$[1].accountHolderName").value("Claudia"))
+                .andExpect(jsonPath("$[1].accountHolderSurname").value("Beatriz"))
+                .andExpect(jsonPath("$[1].creationDate").value(today))
+                .andExpect(jsonPath("$[1].inactivationDate").value(today));
     }
 
     @DisplayName("Valida se busca dois registros")
@@ -228,5 +265,25 @@ public class SearchPixKeysUseCaseTest {
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.detail").value("Não foram encontrados dados para essa consulta"));
+    }
+
+    @DisplayName("Valida cenário de erro na busca de id")
+    @Test
+    public void shouldSearchComIdWithError() throws Exception {
+
+        Account account = new Account(AccountType.CHECKING_ACCOUNT, 1, 12345, "Claudia",
+                "Beatriz", PersonType.NATURAL_PERSON);
+        accountRepository.save(account);
+
+        PixKey pixKey = new PixKey(KeyType.RANDOM, "1d1d6467-e939-46e0-94e6-9f5298fb5e40", account);
+        pixKeyRepository.save(pixKey);
+
+        mockMvc.perform(get("/v1/pix-keys")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("id", UUID.randomUUID().toString())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.detail").value("Id da chave não existe"));
     }
 }
